@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TADZKIR – Pengingat tugas, agar tidak terlupa.</title>
+<meta name="description" content="TADZKIR: pengingat tugas sederhana dengan deadline dan notifikasi.">
+<meta name="theme-color" content="#0E7C66" id="metaTheme">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><img src="assets/logo.png" alt="" width="34" height="34"><span>TADZKIR</span></div>
+    <nav id="sideNav" aria-label="Navigasi utama"></nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="brand mobile-only"><img src="assets/logo.png" alt="" width="30" height="30"><span>TADZKIR</span></div>
+      <p class="tagline">Pengingat tugas, agar tidak terlupa.</p>
+      <button id="themeBtn" class="icon-btn" aria-label="Ganti mode terang/gelap"></button>
+    </header>
+
+    <main>
+      <h1 id="title">Dashboard</h1>
+
+      <section id="hero" class="hero"><div><p class="hello" id="helloTxt"></p><h2 id="heroTitle"></h2><p class="hero-sub" id="heroSub"></p></div><div class="ring" id="ring" aria-label="Progres tugas"><span id="ringTxt">0%</span></div></section>
+
+      <section id="stats" class="stats" aria-label="Statistik"></section>
+
+      <section id="toolbar" class="toolbar">
+        <div class="sf"><input id="search" type="search" placeholder="Cari judul tugas…" aria-label="Cari tugas">
+          <select id="catFilter" aria-label="Filter kategori"></select>
+          <select id="sort" aria-label="Urutkan"><option value="deadline">Urut: Deadline</option><option value="priority">Urut: Prioritas</option><option value="created">Urut: Terbaru</option><option value="manual">Urut: Manual (seret)</option></select></div>
+        <div id="chips" class="chips" role="group" aria-label="Filter"></div>
+        <button id="addBtn" class="btn primary">+ Tambah Tugas</button>
+      </section>
+
+      <section id="list" class="grid" aria-live="polite"></section>
+
+      <section id="settings" class="settings" hidden>
+        <div class="row"><div><strong>Mode tampilan</strong><small>Terang atau gelap.</small></div><button id="setTheme" class="btn"></button></div>
+        <div class="row"><div><strong>Notifikasi</strong><small id="notifState"></small></div><button id="setNotif" class="btn">Aktifkan</button></div>
+        <div class="row"><div><strong>Suara pengingat</strong><small>Bunyi singkat saat aplikasi terbuka.</small></div><button id="setSound" class="btn"></button></div>
+        <div class="row"><div><strong>Nada notifikasi</strong><small id="audioState"></small></div><div class="btns"><button id="audioPick" class="btn">Pilih audio</button><button id="audioTest" class="btn">Tes</button><button id="audioReset" class="btn">Reset</button></div><input id="audioFile" type="file" accept="audio/*" hidden></div>
+        <div class="row"><div><strong>Export ke kalender (.ics)</strong><small>Masukkan semua tugas aktif ke Google/Apple Calendar.</small></div><button id="icsBtn" class="btn">Export .ics</button></div>
+        <div class="row"><div><strong>Export data</strong><small>Unduh semua tugas sebagai file JSON.</small></div><button id="exportBtn" class="btn">Export</button></div>
+        <div class="row"><div><strong>Import data</strong><small>Gabungkan tugas dari file JSON.</small></div><button id="importBtn" class="btn">Import</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+        <div class="row"><div><strong>Hubungi developer</strong><small>0814-5509-0805 · saran, laporan bug, atau pertanyaan.</small></div><div class="btns"><a class="btn contact" href="https://wa.me/6281455090805?text=Halo%2C%20saya%20pengguna%20TADZKIR" target="_blank" rel="noopener">WhatsApp</a><a class="btn contact" href="tel:+6281455090805">Telepon</a></div></div>
+        <div class="row danger"><div><strong>Hapus semua tugas</strong><small>Tindakan ini tidak bisa dibatalkan.</small></div><button id="wipeBtn" class="btn danger-btn">Hapus semua</button></div>
+      </section>
+    </main>
+  </div>
+  <nav class="bottom" id="bottomNav" aria-label="Navigasi bawah"></nav>
+</div>
+
+<!-- Modal tambah/edit tugas -->
+<div class="overlay" id="taskModal" hidden>
+  <form class="modal" id="taskForm" novalidate role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle">Tambah Tugas</h2>
+    <label>Judul tugas *<input id="fTitle" maxlength="120" autocomplete="off"><span class="err" data-for="fTitle"></span></label>
+    <label>Deskripsi <small>(opsional)</small><textarea id="fDesc" rows="2" maxlength="500"></textarea></label>
+    <div class="two">
+      <label>Tanggal deadline *<input id="fDate" type="date"><span class="err" data-for="fDate"></span></label>
+      <label>Waktu deadline *<input id="fTime" type="time"><span class="err" data-for="fTime"></span></label>
+    </div>
+    <div class="two">
+      <label>Prioritas<select id="fPri"><option value="low">🟢 Rendah</option><option value="mid" selected>🟡 Sedang</option><option value="high">🔴 Tinggi</option></select></label>
+      <label>Kategori<input id="fCat" list="catList" maxlength="30" placeholder="Kuliah, Kerja…" autocomplete="off"><datalist id="catList"></datalist></label>
+    </div>
+    <label>Ulangi tugas<select id="fRepeat"><option value="none">Tidak berulang</option><option value="daily">Setiap hari</option><option value="weekly">Setiap minggu</option><option value="monthly">Setiap bulan</option></select></label>
+    <div class="subbox"><label>Subtugas <small>(opsional)</small></label>
+      <div class="subadd"><input id="fSubIn" maxlength="80" placeholder="Tulis subtugas lalu Enter"><button type="button" class="btn" id="fSubAdd">Tambah</button></div>
+      <ul id="fSubList" class="sublist"></ul></div>
+    <label class="check"><input id="fRemind" type="checkbox" checked> Aktifkan pengingat</label>
+    <div id="remindBox" class="remind-box">
+      <label>Mode
+        <select id="fMode"><option value="repeat">Pengingat berulang</option><option value="once">Pengingat sekali</option></select>
+      </label>
+      <div class="two" id="countRow">
+        <label>Jumlah pengingat
+          <select id="fCount"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option value="custom">Custom…</option></select>
+        </label>
+        <label id="customWrap" hidden>Jumlah custom<input id="fCustom" type="number" min="1" max="50" value="6"><span class="err" data-for="fCustom"></span></label>
+      </div>
+      <div class="two">
+        <label>Interval<input id="fInterval" type="number" min="1" max="999" value="2"><span class="err" data-for="fInterval"></span></label>
+        <label>Satuan
+          <select id="fUnit"><option value="minutes">menit</option><option value="hours" selected>jam</option><option value="days">hari</option><option value="weeks">minggu</option></select>
+        </label>
+      </div>
+      <small class="hint" id="remindHint"></small>
+    </div>
+    <div class="actions"><button type="button" class="btn" id="cancelBtn">Batal</button><button type="submit" class="btn primary">Simpan</button></div>
+  </form>
+</div>
+
+<!-- Modal konfirmasi -->
+<div class="overlay" id="confirmModal" hidden>
+  <div class="modal small" role="alertdialog" aria-modal="true" aria-labelledby="confirmText">
+    <h2 id="confirmText"></h2>
+    <div class="actions"><button class="btn" id="confirmNo">Batal</button><button class="btn danger-btn" id="confirmYes">Hapus</button></div>
+  </div>
+</div>
+
+<button id="fab" class="fab" aria-label="Tambah tugas">+</button>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>
